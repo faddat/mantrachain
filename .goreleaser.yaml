@@ -75,85 +75,75 @@ builds:
       - ledger
       - static_wasm
 
-  # - id: mantrachaind-linux-amd64
-  #   main: ./cmd/mantrachaind
-  #   binary: mantrachaind
-  #   hooks:
-  #     pre:
-  #       - wget https://github.com/CosmWasm/wasmvm/releases/download/{{ .Env.COSMWASM_VERSION }}/libwasmvm_muslc.x86_64.a -O /lib/libwasmvm_muslc.x86_64.a
-  #       # verify checksum
-  #       - sha256sum /lib/libwasmvm_muslc.x86_64.a | grep $(cat /tmp/checksums.txt | grep libwasmvm_muslc.x86_64 | cut -d ' ' -f 1) || exit 1
-  #   goos:
-  #     - linux
-  #   goarch:
-  #     - amd64
-  #   env:
-  #     - CC=x86_64-linux-gnu-gcc
-  #   flags:
-  #     - -mod=readonly
-  #     - -trimpath
-  #   ldflags:
-  #     - -X github.com/cosmos/cosmos-sdk/version.Name=mantrachain
-  #     - -X github.com/cosmos/cosmos-sdk/version.AppName=mantrachaind
-  #     - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
-  #     - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .ShortCommit }}
-  #     - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger,muslc,osusergo
-  #     - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.CMT_VERSION }}
-  #     - -w -s
-  #     - -linkmode=external
-  #     - -extldflags '-Wl,-z,muldefs -static -lm'
-  #   tags:
-  #     - netgo
-  #     - ledger
-  #     - muslc
-  #     - osusergo
+  - id: mantrachaind-linux-amd64
+    main: ./cmd/mantrachaind
+    binary: mantrachaind
+    hooks:
+      pre:
+        - apk add --update linux-headers
+        - wget https://github.com/CosmWasm/wasmvm/releases/download/{{ .Env.COSMWASM_VERSION }}/libwasmvm_muslc.x86_64.a -O /lib/libwasmvm_muslc.x86_64.a
+        # verify checksum
+        - sha256sum /lib/libwasmvm_muslc.x86_64.a | grep $(cat /tmp/checksums.txt | grep libwasmvm_muslc.x86_64 | cut -d ' ' -f 1) || exit 1
+    goos:
+      - linux
+    goarch:
+      - amd64
+    flags:
+      - -mod=readonly
+      - -trimpath
+    ldflags:
+      - -X github.com/cosmos/cosmos-sdk/version.Name=mantrachain
+      - -X github.com/cosmos/cosmos-sdk/version.AppName=mantrachaind
+      - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .ShortCommit }}
+      - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger,muslc,osusergo
+      - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.CMT_VERSION }}
+      - -w -s
+      - -linkmode=external
+      - -extldflags '-Wl,-z,muldefs -static -lm'
+    tags:
+      - netgo
+      - ledger
+      - muslc
+      - osusergo
 
-  # - id: mantrachaind-linux-arm64
-  #   main: ./cmd/mantrachaind
-  #   binary: mantrachaind
-  #   hooks:
-  #     pre:
-  #       - wget https://github.com/CosmWasm/wasmvm/releases/download/{{ .Env.COSMWASM_VERSION }}/libwasmvm_muslc.aarch64.a -O /lib/libwasmvm_muslc.aarch64.a
-  #       # verify checksum
-  #       - sha256sum /lib/libwasmvm_muslc.aarch64.a | grep $(cat /tmp/checksums.txt | grep libwasmvm_muslc.aarch64 | cut -d ' ' -f 1) || exit 1
-  #   goos:
-  #     - linux
-  #   goarch:
-  #     - arm64
-  #   env:
-  #     - CC=aarch64-linux-gnu-gcc
-  #   flags:
-  #     - -mod=readonly
-  #     - -trimpath
-  #   ldflags:
-  #     - -X github.com/cosmos/cosmos-sdk/version.Name=mantrachain 
-  #     - -X github.com/cosmos/cosmos-sdk/version.AppName=mantrachaind 
-  #     - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }} 
-  #     - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .ShortCommit }}
-  #     - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger,muslc,osusergo
-  #     - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.CMT_VERSION }}
-  #     - -w -s
-  #     - -linkmode=external
-  #     - -extldflags '-Wl,-z,muldefs -static -lm'
-  #   tags:
-  #     - netgo
-  #     - ledger
-  #     - muslc
-  #     - osusergo
-
-universal_binaries:
-  - id: mantrachaind-darwin-universal
-    ids:
-      - mantrachaind-darwin-amd64
-      - mantrachaind-darwin-arm64
-    replace: false
+  - id: mantrachaind-linux-arm64
+    main: ./cmd/mantrachaind
+    binary: mantrachaind
+    hooks:
+      pre:
+        - apk add --update linux-headers
+        - wget https://github.com/CosmWasm/wasmvm/releases/download/{{ .Env.COSMWASM_VERSION }}/libwasmvm_muslc.aarch64.a -O /lib/libwasmvm_muslc.aarch64.a
+        # verify checksum
+        - sha256sum /lib/libwasmvm_muslc.aarch64.a | grep $(cat /tmp/checksums.txt | grep libwasmvm_muslc.aarch64 | cut -d ' ' -f 1) || exit 1
+    goos:
+      - linux
+    goarch:
+      - arm64
+    flags:
+      - -mod=readonly
+      - -trimpath
+    ldflags:
+      - -X github.com/cosmos/cosmos-sdk/version.Name=mantrachain 
+      - -X github.com/cosmos/cosmos-sdk/version.AppName=mantrachaind 
+      - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }} 
+      - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .ShortCommit }}
+      - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger,muslc,osusergo
+      - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.CMT_VERSION }}
+      - -w -s
+      - -linkmode=external
+      - -extldflags '-Wl,-z,muldefs -static -lm'
+    tags:
+      - netgo
+      - ledger
+      - muslc
+      - osusergo
 
 archives:
   - id: zipped
     builds:
-      # - mantrachaind-darwin-universal
-      # - mantrachaind-linux-amd64
-      # - mantrachaind-linux-arm64
+      - mantrachaind-linux-amd64
+      - mantrachaind-linux-arm64
       - mantrachaind-darwin-amd64
       - mantrachaind-darwin-arm64
     name_template: "{{.ProjectName}}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
@@ -162,9 +152,8 @@ archives:
       - none*
   - id: binaries
     builds:
-      # - mantrachaind-darwin-universal
-      # - mantrachaind-linux-amd64
-      # - mantrachaind-linux-arm64
+      - mantrachaind-linux-amd64
+      - mantrachaind-linux-arm64
       - mantrachaind-darwin-amd64
       - mantrachaind-darwin-arm64
     name_template: "{{.ProjectName}}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
@@ -206,9 +195,6 @@ release:
   name_template: "Mantrachain v{{.Version}}"
   mode: replace
   draft: true
-
-snapshot:
-  name_template: SNAPSHOT-{{ .Commit }}
 
 # Docs: https://goreleaser.com/customization/announce/
 # We could automatically announce the release in
