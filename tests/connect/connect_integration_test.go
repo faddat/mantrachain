@@ -44,7 +44,7 @@ func init() {
 var (
 	image = ibc.DockerImage{
 		Repository: "mantra-chain/mantrachain",
-		Version:    "latest",
+		Version:    "local",
 		UidGid:     "1025:1025",
 	}
 

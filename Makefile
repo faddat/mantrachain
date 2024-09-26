@@ -146,6 +146,9 @@ test-cover:
 test-connect: build-image
 	@VERSION=$(VERSION) cd tests/connect && go test -v -race .
 
+ictest-skip-connect:
+	@VERSION=$(VERSION) cd tests/connect && go test -v -race .
+
 ###############################################################################
 ###                                Release                                  ###
 ###############################################################################

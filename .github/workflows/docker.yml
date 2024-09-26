@@ -5,6 +5,10 @@ on:
   push:
     tags:
       - "v*.*.*"
+    branches: "*"
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       release_tag:
@@ -13,6 +17,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  TAR_PATH: mantrachain-image.tar
 
 # Set concurrency for this workflow to cancel in-progress jobs if retriggered.
 # The github.ref is only available when triggered by a PR so fall back to github.run_id for other cases.
@@ -40,11 +45,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: set lower case owner name
+      - name: Define Additional Environment Variables
+        id: vars
         run: |
           echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
+          echo "COMMIT_SHORT_SHA=` | cut -c1-7` >>${GITHUB_ENV}
         env:
           OWNER: '${{ github.repository_owner }}'
+          SHA: '${{ github.sha }}'
 
       - uses: strangelove-ventures/heighliner-build-action@main
         with:
@@ -55,6 +63,48 @@ jobs:
           heighliner-tag: v1.6.4
           github-organization: ${{ github.repository_owner }}
           github-repo: ${{ github.event.repository.name }}
-          git-ref: ${{ github.event.inputs.release_tag || github.ref_name }}
+          git-ref: ${{ github.event.inputs.release_tag || env.SHA }}
           registry: ghcr.io/${{ env.OWNER_LC }}
           skip: ${{ github.event_name == 'pull_request' }}
+          tar-export-path: ${{ env.TAR_PATH }} # export a tarball that can be uploaded as an artifact for the e2e jobs
+
+      # Use github actions artifacts for temporary storage of the docker image tarball
+      - name: Publish Tarball as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: mantrachain-docker-image
+          path: ${{ env.TAR_PATH }}
+  
+  e2e-tests:
+    needs: heighliner-docker
+    runs-on: ubuntu-latest-x64-xlarge
+    strategy:
+        matrix:
+            # names of `make` commands to run tests
+            go-version: ["1.23.x"]
+            test: ["ictest-skip-connect"]
+        fail-fast: false
+    steps:
+      # Load the docker image tarball from github actions artifacts and run tests (one runner per test due to matrix)
+      - name: Download Tarball Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: mantrachain-docker-image
+      
+      - name: Load Docker Image
+        run: docker image load -t mantra-chain/mantrachain:local -i ${{ env.TAR_PATH }}
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.release_tag || github.ref }}
+
+      - name: Set up Go 1.19
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      
+      - name: Run Integration Tests
+        run: make ${{ matrix.test }}
+
+      
