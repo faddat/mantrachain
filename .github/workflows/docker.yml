@@ -66,9 +66,9 @@ jobs:
           git-ref: ${{ github.event.inputs.release_tag || env.COMMIT_SHORT_SHA }}
           registry: ghcr.io/${{ env.OWNER_LC }}
           skip: ${{ github.event_name == 'pull_request' }}
-          tar-export-path: ${{ env.TAR_PATH }} # export a tarball that can be uploaded as an artifact for the e2e jobs
 
-      # Use github actions artifacts for temporary storage of the docker image tarball
+      - name: Save Docker Image as Tarball
+        run: docker image save -o ${{ env.TAR_PATH }} ghcr.io/${{ env.OWNER_LC }}/${{ github.event.repository.name }}:${{ github.event.inputs.release_tag || env.COMMIT_SHORT_SHA }}
       - name: Publish Tarball as Artifact
         uses: actions/upload-artifact@v3
         with:
